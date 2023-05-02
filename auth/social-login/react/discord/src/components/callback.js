@@ -40,10 +40,7 @@ const Callback = (props) => {
 
     const getAuthId = (result) => {
         let authId = result.oauth.userInfo.email;
-        if (result.oauth.provider === "twitter") {
-            authId = result.oauth.userInfo.preferredUsername
-        }
-        return `${result.oauth.provider}###${authId}`; // e.g., twitter###elonmusk or google###elonmusk@gmail.com
+        return `${result.oauth.provider}###${authId}`;
     }
 
     const getFunWallet = async (uniqueId) => {
