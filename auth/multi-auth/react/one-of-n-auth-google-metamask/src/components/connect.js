@@ -6,7 +6,6 @@ import { useEffect, useState } from "react"
 import { Magic } from 'magic-sdk'
 import { OAuthExtension } from '@magic-ext/oauth'
 import { ethers } from "ethers"
-import { Redirect } from 'react-router-dom';
 
 const Connect = () => {
     const { connector, isConnected } = useAccount()

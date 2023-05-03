@@ -25,7 +25,8 @@ const Callback = (props) => {
     })
 
     useEffect(() => {
-        if (magic.oauth) {
+        const socialLoginProvider = new URLSearchParams(window.location.search).get('provider')
+        if (socialLoginProvider) {
             magic.oauth.getRedirectResult().then((result) => {
                 setResult(result)
             })
