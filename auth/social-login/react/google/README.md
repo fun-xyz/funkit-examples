@@ -1,70 +1,132 @@
-# Getting Started with Create React App
+# Google Auth
+Authenticate wallet with Google.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Google can be used as a form of authentication for Fun Wallet.
 
-## Available Scripts
+Google login will be done through a frontend interface. See an example project [here](https://github.com/TheFunGroup/fun-wallet-examples/tree/main/auth/social-login/react/google).
 
-In the project directory, you can run:
+The following shows creating a Fun Wallet with Google Sign in a react app. When the `Login Fun Wallet with Google` button is clicked, users will be redirected to Google's sign in page. After they sign in, the Google Account is used to create a Fun Wallet.
 
-### `npm start`
+**callback.js**
+```js
+import { ethers } from "ethers"
+import { FunWallet, configureEnvironment } from "fun-wallet"
+import { MultiAuthEoa } from "fun-wallet/auth"
+import { Magic } from 'magic-sdk';
+import { OAuthExtension } from '@magic-ext/oauth';
+import { useEffect, useState } from "react";
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+const Callback = (props) => {
+    const [result, setResult] = useState("")
+    const [funWalletAddr, setFunWalletAddr] = useState("")
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+    const magic = new Magic('pk_live_846F1095F0E1303C', {
+        extensions: [new OAuthExtension()],
+    });
 
-### `npm test`
+    useEffect(() => {
+        const configureFunWalletEnv = async () => {
+            const options = {
+                chain: 5, // 5 for Goerli, 1 for Mainnet
+                apiKey: "MYny3w7xJh6PRlRgkJ9604sHouY2MTke6lCPpSHq"
+            }
+            await configureEnvironment(options)
+        }
+        configureFunWalletEnv()
+    })
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+    useEffect(() => {
+        if (magic.oauth) {
+            magic.oauth.getRedirectResult().then((result) => {
+                setResult(result)
+            })
+        }
+    }, [])
 
-### `npm run build`
+    useEffect(() => {
+        if (result) {
+            buildWallet(result)
+        }
+    }, [result])
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    const getAuthId = (result) => {
+        let authId = result.oauth.userInfo.email;
+        return result.oauth.provider+"###"+authId; // e.g., google###elonmusk@gmail.com
+    }
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    const getFunWallet = async (uniqueId) => {
+        return new FunWallet({ uniqueId, index: 0 }) // No.0 wallet for the uniqueId
+    }
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    const buildWallet = async (result) => {
+        const authId = getAuthId(result)
+        const publicAddress = result.magic.userMetadata.publicAddress
+        const provider = new ethers.providers.Web3Provider(magic.rpcProvider);
+        const auth = new MultiAuthEoa({ provider, authIds: [[authId, publicAddress]] })
 
-### `npm run eject`
+        const funWallet = await getFunWallet(await auth.getUniqueId())
+        setFunWalletAddr(await funWallet.getAddress())
+    }
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+    return (
+        <div className="callback">
+            <p>The Fun Wallet is generated at: {funWalletAddr}</p>
+        </div>
+    )
+}
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+export default Callback;
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+**home.js**
+```js
+import { Magic } from 'magic-sdk';
+import { OAuthExtension } from '@magic-ext/oauth';
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+const Home = () => {
+    const login = async () => {
+        const magic = new Magic('pk_live_846F1095F0E1303C', {
+            extensions: [new OAuthExtension()],
+        });
 
-## Learn More
+        // Start the OAuth 2.0 login flow
+        await magic.oauth.loginWithRedirect({
+            provider: 'google',
+            redirectURI: 'http://localhost:3000/callback',
+        });
+    }
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+    return (
+        <div>
+            <header className="App-header">
+                <button onClick={login}>Login Fun Wallet with Google</button>
+            </header>
+        </div>
+    );
+};
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+export default Home;
+```
 
-### Code Splitting
+**App.js**
+```js
+import './App.css';
+import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
+import Home from './components/home';
+import Callback from './components/callback';
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+function App() {
+  return (
+    <div>
+      <Router>
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/callback' element={<Callback />} />
+        </Routes>
+      </Router>
+    </div>
+  );
+}
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+export default App;
+```
