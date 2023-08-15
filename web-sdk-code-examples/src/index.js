@@ -27,6 +27,8 @@ import {
   Goerli,
 } from "@fun-xyz/react";
 
+window.Buffer = window.Buffer || require("buffer").Buffer;
+
 const DEFAULT_FUN_WALLET_CONFIG = {
   apiKey: "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf",
   chain: Goerli,
