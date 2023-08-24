@@ -14,6 +14,7 @@ import UseCreateFunExistingExample from "./Examples/useCreateFun-existing-wallet
 import UseConfigExample from "./Examples/useConfig/App"
 import UseNetworkExample from "./Examples/useNetwork/App";
 import UseActionTransferExample from "./Examples/useAction-transfer/useCreateFunExample"
+import UseActionStakeExample from "./Examples/useAction-stake/useCreateFunExample"
 import UseActionSwapExample from "./Examples/useAction-swap/useCreateFunExample"
 import UseGroupExample from "./Examples/useGroup/App"
 
@@ -75,10 +76,14 @@ const router = createBrowserRouter([
             <Link to="useAction-transfer">useAction Transfer Example </Link>
           </li>
           <li>
+            <Link to="useAction-stake">useAction Stake Example </Link>
+          </li>
+          <li>
             <Link to="useAction-swap">useAction Swap Example </Link>
           </li>
           <li>
             <Link to="useGroup">useGroup Example </Link>
+
           </li>
         </ol>
       </div>
@@ -119,6 +124,10 @@ const router = createBrowserRouter([
   {
     path: "/useGroup",
     element: <UseGroupExample />,
+  },
+  {
+    path: "/useAction-stake",
+    element: <UseActionStakeExample />,
   }
 ]);
 

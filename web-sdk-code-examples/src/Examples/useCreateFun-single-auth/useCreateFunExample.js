@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 export default function App() {
     const { activate, account: connectorAccount } = useConnector({index: 0, autoConnect: true});
-    const { account, initializeFunAccount } = useCreateFun()
+    const { account, initializeFunAccount, funWallet, allUsers } = useCreateFun()
 
     const initializeSingleAuthFunAccount = () => {
         if (!connectorAccount) {
@@ -19,16 +19,21 @@ export default function App() {
         }
         initializeFunAccount({
             users: [{userId: convertToValidUserId(connectorAccount)}],
-            index: 214
+            index: 214   
         }).catch()
     }
-
+  const log= () => {
+    console.log(funWallet)
+    funWallet.create(allUsers)
+  }
   return (
     <div className="App">
         <Link to="/">back</Link>
       <h1>Initialize single Auth wallet example</h1>
       <h2>Fun Wallet Account Address: {account}</h2>
-        <button onClick={initializeSingleAuthFunAccount}>Create Single auth wallet</button>
+      <button onClick={initializeSingleAuthFunAccount}>Create Single auth wallet</button>
+      <button onClick={log}>Create Single auth wallet</button>
+
     </div>
   );
 }
